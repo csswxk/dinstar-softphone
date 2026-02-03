@@ -4,7 +4,8 @@ import {
   Inviter,
   Invitation,
   SessionState,
-  UserAgentState
+  UserAgentState,
+  RegistererState
 } from "sip.js/lib/api/index.js";
 
 /**
@@ -46,14 +47,31 @@ function log(...args) {
 
 function setText(el, v) { el.textContent = v; }
 
+function setPill(el, text, level) {
+  setText(el, text);
+  el.classList.remove("ok", "warn", "bad");
+  if (level) el.classList.add(level);
+}
+
 let userAgent = null;
 let registerer = null;
 let currentSession = null;   // Inviter or Invitation
 let pendingInvitation = null;
 
-function setCallState(v) { setText(els.callState, v); }
-function setUaState(v) { setText(els.uaState, v); }
-function setRegState(v) { setText(els.regState, v); }
+function setCallState(v) {
+  const level = v === "established" ? "ok" : v === "idle" ? "warn" : "bad";
+  setPill(els.callState, v, level);
+}
+function setUaState(v) {
+  const level = v === "started" ? "ok" : v === "stopped" ? "bad" : "warn";
+  setPill(els.uaState, v, level);
+  els.btnStart.classList.toggle("btn-ok", v === "started");
+}
+function setRegState(v) {
+  const level = v === "registered" ? "ok" : v === "failed" ? "bad" : "warn";
+  setPill(els.regState, v, level);
+  els.btnRegister.classList.toggle("btn-ok", v === "registered");
+}
 
 function enableCallControls({ canAnswer, inCall }) {
   els.btnAnswer.disabled = !canAnswer;
@@ -126,6 +144,7 @@ function wireSession(session) {
 }
 
 async function startUA() {
+  setUaState("starting");
   const pbxHost = els.pbxHost.value.trim();
   const ext = els.ext.value.trim();
   const pwd = els.pwd.value;
@@ -162,7 +181,13 @@ async function startUA() {
 
   userAgent.stateChange.addListener((s) => {
     log("UA state:", s);
-    setUaState(String(s));
+    if (s === UserAgentState.Started) {
+      setUaState("started");
+    } else if (s === UserAgentState.Stopped) {
+      setUaState("stopped");
+    } else {
+      setUaState(String(s));
+    }
   });
 
   userAgent.delegate = {
@@ -177,10 +202,25 @@ async function startUA() {
   };
 
   registerer = new Registerer(userAgent);
+  registerer.stateChange.addListener((s) => {
+    log("Registerer state:", s);
+    if (s === RegistererState.Registered) {
+      setRegState("registered");
+    } else if (s === RegistererState.Unregistered) {
+      setRegState("not registered");
+    } else if (s === RegistererState.Terminated) {
+      setRegState("failed");
+    }
+  });
 
-  await userAgent.start();
-  setUaState("started");
-  log("UA started.");
+  try {
+    await userAgent.start();
+    setUaState("started");
+    log("UA started.");
+  } catch (e) {
+    setUaState("failed");
+    throw e;
+  }
 }
 
 async function stopUA() {
@@ -206,16 +246,16 @@ async function stopUA() {
 
 async function doRegister() {
   if (!registerer) return alert("Start UA first.");
+  setRegState("registering");
   await registerer.register();
-  setRegState("registered");
-  log("Registered.");
+  log("Register request sent.");
 }
 
 async function doUnregister() {
   if (!registerer) return alert("Start UA first.");
+  setRegState("unregistering");
   await registerer.unregister();
-  setRegState("not registered");
-  log("Unregistered.");
+  log("Unregister request sent.");
 }
 
 async function doCall() {
