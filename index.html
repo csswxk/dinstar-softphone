@@ -1,0 +1,87 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dinstar Softphone (SIP.js)</title>
+    <style>
+      body { font-family: system-ui, Arial; margin: 16px; max-width: 780px; }
+      fieldset { margin: 12px 0; padding: 12px; }
+      input, select, button { padding: 8px; margin: 4px 0; width: 100%; box-sizing: border-box; }
+      .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+      .status { padding: 10px; background: #f4f4f4; border-radius: 8px; }
+      .controls { display: flex; gap: 8px; flex-wrap: wrap; }
+      .controls button { width: auto; }
+      audio { width: 100%; margin-top: 8px; }
+      code { background: #f2f2f2; padding: 2px 6px; border-radius: 6px; }
+    </style>
+  </head>
+  <body>
+    <h1>Dinstar Softphone (WebRTC + SIP.js)</h1>
+
+    <div class="status">
+      <div>UA: <code id="uaState">stopped</code></div>
+      <div>Register: <code id="regState">not registered</code></div>
+      <div>Call: <code id="callState">idle</code></div>
+    </div>
+
+    <fieldset>
+      <legend>Account</legend>
+      <div class="row">
+        <div>
+          <label>PBX Host/IP</label>
+          <input id="pbxHost" value="192.168.1.120" placeholder="e.g. 192.168.1.120" />
+        </div>
+        <div>
+          <label>WebSocket URL</label>
+          <input id="wsUrl" value="ws://192.168.1.120:5066" placeholder="ws://PBX:5066 or wss://PBX:5067" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Extension</label>
+          <input id="ext" value="1001" />
+        </div>
+        <div>
+          <label>Password</label>
+          <input id="pwd" value="123456" type="password" />
+        </div>
+      </div>
+
+      <div class="controls">
+        <button id="btnStart">Start UA</button>
+        <button id="btnRegister">Register</button>
+        <button id="btnUnregister">Unregister</button>
+        <button id="btnStop">Stop UA</button>
+      </div>
+    </fieldset>
+
+    <fieldset>
+      <legend>Call</legend>
+      <label>Dial (extension or number)</label>
+      <input id="dialTo" value="1002" />
+
+      <div class="controls">
+        <button id="btnCall">Call</button>
+        <button id="btnAnswer" disabled>Answer</button>
+        <button id="btnHangup" disabled>Hangup</button>
+        <button id="btnMute" disabled>Mute</button>
+        <button id="btnUnmute" disabled>Unmute</button>
+      </div>
+
+      <label>Audio Output (Remote)</label>
+      <audio id="remoteAudio" autoplay></audio>
+
+      <label>Your Mic (Local monitor — optional)</label>
+      <audio id="localAudio" autoplay muted></audio>
+    </fieldset>
+
+    <fieldset>
+      <legend>Logs</legend>
+      <pre id="log" style="white-space: pre-wrap; background:#111; color:#eee; padding:12px; border-radius:10px; min-height:160px;"></pre>
+    </fieldset>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
