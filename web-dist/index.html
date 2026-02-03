@@ -10,20 +10,26 @@
       input, select, button { padding: 8px; margin: 4px 0; width: 100%; box-sizing: border-box; }
       .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
       .status { padding: 10px; background: #f4f4f4; border-radius: 8px; }
+      .pill { padding: 2px 8px; border-radius: 999px; }
+      .pill.ok { background: #d7f5dd; color: #145a23; }
+      .pill.warn { background: #fff3cd; color: #7a5d00; }
+      .pill.bad { background: #f8d7da; color: #7a1e26; }
+      .btn-ok { background: #1f7a3f; color: #fff; border: none; }
+      .btn-ok:disabled { opacity: 0.6; }
       .controls { display: flex; gap: 8px; flex-wrap: wrap; }
       .controls button { width: auto; }
       audio { width: 100%; margin-top: 8px; }
       code { background: #f2f2f2; padding: 2px 6px; border-radius: 6px; }
     </style>
-    <script type="module" crossorigin src="./assets/index-Cz0tPBBM.js"></script>
+    <script type="module" crossorigin src="./assets/index-B6BtpnlS.js"></script>
   </head>
   <body>
     <h1>Dinstar Softphone (WebRTC + SIP.js)</h1>
 
     <div class="status">
-      <div>UA: <code id="uaState">stopped</code></div>
-      <div>Register: <code id="regState">not registered</code></div>
-      <div>Call: <code id="callState">idle</code></div>
+      <div>UA: <code id="uaState" class="pill bad">stopped</code></div>
+      <div>Register: <code id="regState" class="pill warn">not registered</code></div>
+      <div>Call: <code id="callState" class="pill warn">idle</code></div>
     </div>
 
     <fieldset>
