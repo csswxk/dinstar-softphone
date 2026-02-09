@@ -1,5 +1,6 @@
 const { app, BrowserWindow, ipcMain } = require("electron");
 const { spawn } = require("child_process");
+const fs = require("fs");
 const path = require("path");
 
 // TEMP: allow self-signed certs for WSS testing. Remove for production.
@@ -16,6 +17,29 @@ function sendToRenderer(channel, payload) {
   }
 }
 
+function findBaresipBinary() {
+  const bundled = path.join(process.resourcesPath, "baresip");
+  const candidates = [
+    process.env.BARESIP_PATH,
+    bundled,
+    "baresip",
+    "/opt/homebrew/bin/baresip",
+    "/usr/local/bin/baresip",
+    "/usr/bin/baresip",
+  ].filter(Boolean);
+
+  for (const bin of candidates) {
+    try {
+      if (bin === "baresip") return bin;
+      fs.accessSync(bin, fs.constants.X_OK);
+      return bin;
+    } catch (_) {
+      // try next candidate
+    }
+  }
+  return null;
+}
+
 function parseBaresipLine(line) {
   const l = line.toLowerCase();
   if (l.includes("user agents (1)") || l.includes("creating ua")) return { ua: "started" };
@@ -30,7 +54,14 @@ function parseBaresipLine(line) {
 function startBaresip({ account }) {
   if (baresipProc) return;
 
-  baresipProc = spawn("baresip", [], {
+  const baresipBin = findBaresipBinary();
+  if (!baresipBin) {
+    sendToRenderer("baresip:log", "[err] baresip not found. Install it or set BARESIP_PATH.");
+    sendToRenderer("baresip:state", { ua: "failed" });
+    return;
+  }
+
+  baresipProc = spawn(baresipBin, [], {
     stdio: ["pipe", "pipe", "pipe"],
   });
   baresipReady = true;
@@ -67,6 +98,13 @@ function startBaresip({ account }) {
   baresipProc.on("exit", (code) => {
     sendToRenderer("baresip:log", `baresip exited (${code ?? "unknown"})`);
     sendToRenderer("baresip:state", { ua: "stopped" });
+    baresipProc = null;
+    baresipReady = false;
+  });
+
+  baresipProc.on("error", (err) => {
+    sendToRenderer("baresip:log", `[err] baresip spawn error: ${err.message}`);
+    sendToRenderer("baresip:state", { ua: "failed" });
     baresipProc = null;
     baresipReady = false;
   });
