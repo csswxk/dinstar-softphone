@@ -1,6 +1,9 @@
 const { app, BrowserWindow } = require("electron");
 const path = require("path");
 
+// TEMP: allow self-signed certs for WSS testing. Remove for production.
+app.commandLine.appendSwitch("ignore-certificate-errors");
+
 function createWindow() {
   const win = new BrowserWindow({
     width: 420,

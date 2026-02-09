@@ -23,6 +23,8 @@ const els = {
   log: document.getElementById("log"),
   pbxHost: document.getElementById("pbxHost"),
   wsUrl: document.getElementById("wsUrl"),
+  useStun: document.getElementById("useStun"),
+  stunServer: document.getElementById("stunServer"),
   ext: document.getElementById("ext"),
   pwd: document.getElementById("pwd"),
   dialTo: document.getElementById("dialTo"),
@@ -149,6 +151,8 @@ async function startUA() {
   const ext = els.ext.value.trim();
   const pwd = els.pwd.value;
   const wsUrl = els.wsUrl.value.trim();
+  const useStun = !!els.useStun.checked;
+  const stunServer = els.stunServer.value.trim();
 
   if (!pbxHost || !ext || !pwd || !wsUrl) {
     alert("Please fill PBX Host, WS URL, Extension, Password.");
@@ -175,6 +179,10 @@ async function startUA() {
           autoGainControl: true
         },
         video: false
+      },
+      peerConnectionConfiguration: {
+        // For LAN tests, leave STUN off to avoid public IP candidates.
+        iceServers: useStun && stunServer ? [{ urls: stunServer }] : []
       }
     }
   });
@@ -258,6 +266,13 @@ async function doUnregister() {
   log("Unregister request sent.");
 }
 
+function formatSipResponse(response) {
+  const msg = response?.message ?? response;
+  const code = msg?.statusCode ?? "unknown";
+  const reason = msg?.reasonPhrase ?? "";
+  return `${code} ${reason}`.trim();
+}
+
 async function doCall() {
   if (!userAgent) return alert("Start UA first.");
   const pbxHost = els.pbxHost.value.trim();
@@ -274,7 +289,13 @@ async function doCall() {
   wireSession(inviter);
 
   // Browser requires user gesture for mic; calling from a click is OK.
-  await inviter.invite();
+  await inviter.invite({
+    requestDelegate: {
+      onAccept: (response) => log("INVITE accepted:", formatSipResponse(response)),
+      onReject: (response) => log("INVITE rejected:", formatSipResponse(response)),
+      onProgress: (response) => log("INVITE progress:", formatSipResponse(response)),
+    }
+  });
   log("Calling", target);
 }
 
