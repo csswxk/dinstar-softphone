@@ -23,7 +23,7 @@
     </style>
   </head>
   <body>
-    <h1>Dinstar Softphone (WebRTC + SIP.js)</h1>
+    <h1>Dinstar Softphone (Baresip)</h1>
 
     <div class="status">
       <div>UA: <code id="uaState" class="pill bad">stopped</code></div>
@@ -36,37 +36,24 @@
       <div class="row">
         <div>
           <label>PBX Host/IP</label>
-          <input id="pbxHost" value="192.168.1.120" placeholder="e.g. 192.168.1.120" />
-        </div>
-        <div>
-          <label>WebSocket URL</label>
-          <input id="wsUrl" value="ws://192.168.1.120:5066" placeholder="ws://PBX:5066 or wss://PBX:5067" />
+          <input id="pbxHost" value="10.252.10.63" placeholder="e.g. 192.168.1.120" />
         </div>
       </div>
 
       <div class="row">
         <div>
           <label>Extension</label>
-          <input id="ext" value="1001" />
+          <input id="ext" value="102" />
         </div>
         <div>
           <label>Password</label>
-          <input id="pwd" value="123456" type="password" />
+          <input id="pwd" value="Neci_102102" type="password" />
         </div>
       </div>
 
-      <div class="row">
-        <div>
-          <label>
-            <input id="useStun" type="checkbox" />
-            Use STUN (for WAN)
-          </label>
-        </div>
-        <div>
-          <label>STUN Server</label>
-          <input id="stunServer" value="stun:stun.l.google.com:19302" />
-        </div>
-      </div>
+      <p style="margin: 8px 0 0 0; color: #555;">
+        Uses Baresip (SIP/UDP + RTP). Make sure <code>baresip</code> is installed and in PATH.
+      </p>
 
       <div class="controls">
         <button id="btnStart">Start UA</button>
